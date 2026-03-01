@@ -806,7 +806,7 @@ of yielding an array as `for` does, it yields the value of the body
 for that single iteration. If no iteration reaches the body, `first`
 fails — so it requires a `<decides>` context.
 
-<!--verse
+<!--versetest
 player:=struct{ Name:string }
 GetScore(P:player)<computes><decides>:int=0
 -->
@@ -881,12 +881,14 @@ FindOrDefault(Arr:[]int, Target:int):int =
         -1
 ```
 
+Or:
+
 <!--versetest-->
 <!-- 84 -->
 ```verse
 # Find with fallback using if
 FindOptional(Arr:[]int, Target:int):?int =
-    optional:
+    option:
         Index := first(I -> V : Arr, V = Target). I
             Index
 ```
