@@ -594,13 +594,6 @@ SafeFailableWork()<suspends>:void =
 spawn{SafeFailableWork()}  # Valid - failure handled inside
 ```
 
-The syntax deliberately constrains spawn to launching a single
-function call. You can't spawn a block of code with multiple
-operations; you're limited to spawning one async function. This
-constraint encourages you to think carefully about what you're
-spawning and encapsulate complex operations properly in functions
-rather than creating ad-hoc background tasks.
-
 Spawn finds its place in specific architectural patterns. Global
 background services that monitor game state throughout the entire
 session, cleanup tasks that must complete even if the triggering
@@ -610,11 +603,10 @@ over the structured alternatives.
 
 The contrast with branch illuminates the design philosophy. Branch
 gives you structured concurrency's safety within an async context,
-allowing multiple expressions in its body while maintaining
-parent-child relationships. Spawn trades these safeguards for the
-flexibility to work anywhere, but restricts you to a single function
-call. Each has its place, and choosing between them depends on whether
-you need structure or freedom.
+maintaining parent-child relationships. Spawn trades these safeguards
+for the flexibility to work anywhere. Each has its place, and
+choosing between them depends on whether you need structure or
+freedom.
 
 **Working with spawned tasks:**
 
@@ -1399,48 +1391,6 @@ non-deterministic behavior where transaction retry could produce
 different results due to time progression. If the transaction fails
 and is retried, all calls to `GetSecondsSinceEpoch()` in the retried
 attempt will return a new consistent timestamp.
-
-**Measuring elapsed time across transactions:**
-
-To measure actual elapsed time, take timestamps in separate transactions:
-
-<!--versetest
-game_timer := class:
-    var StartTime:float = 0.0
-
-    Start()<transacts>:void =
-        set StartTime = GetSecondsSinceEpoch()
-
-    GetElapsed()<transacts>:float =
-        CurrentTime := GetSecondsSinceEpoch()
-        CurrentTime - StartTime
-
-assert:
-   Timer := game_timer{}
-   Timer.Start()
-   ElapsedSeconds := Timer.GetElapsed()
-<#
--->
-<!-- 54 -->
-```verse
-game_timer := class:
-    var StartTime:float = 0.0
-
-    Start()<transacts>:void =
-        set StartTime = GetSecondsSinceEpoch()
-
-    GetElapsed()<transacts>:float =
-        CurrentTime := GetSecondsSinceEpoch()
-        CurrentTime - StartTime
-
-Timer := game_timer{}
-Timer.Start()
-
-# Later, in a different transaction
-ElapsedSeconds := Timer.GetElapsed()
-# ElapsedSeconds reflects actual time passed
-```
-<!-- #> -->
 
 **Use cases:**
 

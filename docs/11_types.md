@@ -1886,7 +1886,7 @@ GetCastableFinalSuperClass(BaseType, instance)<decides>:castable_subtype(BaseTyp
 GetCastableFinalSuperClassFromType(BaseType, Type)<decides>:castable_subtype(BaseType)
 ```
 
-Both return a `castable_subtype` representing the most specific `<final_super>` class that:
+Both return a `castable_subtype` representing the least specific `<final_super>` class that:
 
 1. Directly inherits from the specified base type
 2. Is in the inheritance chain of the instance/type
