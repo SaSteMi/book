@@ -49,29 +49,13 @@ it waits for the right moment to resume.
 ### Simulation Updates
 
 A simulation update (or tick) represents one step of the game's
-simulation. Simulation updates and rendering are **independent** —
-modern engines like Unreal Engine completely separate the two. The
-simulation tick rate (TPS) controls how frequently game logic runs,
-while the rendering frame rate (FPS) controls how frequently frames
-are drawn. These can run at different rates: a game might simulate
-at 30 TPS while rendering at 60 or 120 FPS, or vice versa.
+simulation. Simulation and rendering are **independent** — they run
+at separate rates and are decoupled from each other in modern engines.
 
-Each simulation tick processes input, updates game logic, runs
-physics, and advances the game state. The tick rate acts as a clock
-that limits how fast simulation code is allowed to run — if all
-operations finish before the next tick, the engine waits rather than
-immediately starting the next set of operations.
-
-It is important to distinguish between tick rate and performance.
-Poor performance can delay simulation ticks (effectively lowering
-TPS), but this is separate from the configured tick rate itself.
-Increasing the tick rate does not improve performance — slow code
-running at a higher tick rate will still be slow.
-
-Verse's concurrency model abstracts these details, allowing you to
-think in terms of logical time flow rather than platform-specific
-timing. Async expressions suspend at tick boundaries and resume in
-future ticks when their conditions are met.
+Each tick processes input, updates game logic, runs physics, and
+advances the game state. Verse's concurrency model lets you think
+in terms of logical time flow — async expressions suspend at tick
+boundaries and resume in future ticks when their conditions are met.
 
 Async expressions naturally align with this update cycle. When an
 async expression suspends, it yields control back to the game engine,
@@ -509,20 +493,23 @@ Print("Branch started, continuing main flow")
 
 
 Branch excels at handling side effects that shouldn't interrupt the
-main game flow. Think about logging player actions to analytics,
-triggering particle effects that play out over time, or starting
-background music that fades in gradually. These operations need to
-happen, but there's no reason to make the player wait for them to
-complete. Branch lets you express this "start it and move on" pattern
-directly.
+main game flow but that are acceptable to lose if the enclosing scope
+ends. Think about triggering particle effects that play out over time,
+starting background music that fades in gradually, or pre-loading
+assets that might be needed soon. These operations need to happen, but
+there's no reason to make the player wait for them to complete. Branch
+lets you express this "start it and move on" pattern directly.
 
-The relationship between a branch and its enclosing scope maintains
-the structured concurrency guarantee. While the branch task runs
-independently, it's still tied to the lifetime of its parent async
-context. If that parent context completes, either naturally or through
-cancellation, the branch task is automatically canceled too. This
-prevents orphaned tasks from accumulating and consuming resources
-indefinitely.
+The critical semantic of branch is its **cancellation behavior**: a
+branch task is automatically canceled when execution leaves the
+enclosing function scope, whether that happens through normal
+completion, failure, or cancellation from above. This is the
+structured concurrency guarantee at work—branches cannot outlive their
+parent context, which prevents orphaned tasks from accumulating. But
+it also means branch is the wrong choice for work that *must*
+complete, like logging analytics events or saving player progress. For
+those tasks, use `spawn` instead, which runs independently of its
+creating scope.
 
 Like rush, branch faces restrictions with iteration expressions. You
 cannot use branch directly inside a loop or for body, as this could
@@ -613,11 +600,11 @@ trigger async operations—these scenarios justify reaching for spawn
 over the structured alternatives.
 
 The contrast with branch illuminates the design philosophy. Branch
-gives you structured concurrency's safety within an async context,
-maintaining parent-child relationships. Spawn trades these safeguards
-for the flexibility to work anywhere. Each has its place, and
-choosing between them depends on whether you need structure or
-freedom.
+gives you structured fire-and-forget concurrency, but its tasks are
+canceled when the enclosing scope exits. Spawn gives you tasks that
+outlive their creating scope—use it when the work *must* complete
+regardless of what happens to the code that started it. Choose branch
+when cancellation is acceptable; choose spawn when it isn't.
 
 **Working with spawned tasks:**
 
