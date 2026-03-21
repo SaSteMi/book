@@ -457,6 +457,7 @@ functions without it might run forever. This is particularly important
 for constructors and initialization code.
 
 The `<converges>` specifier can be used on:
+
 - `<native>` functions that are guaranteed to terminate
 - Abstract method signatures in classes and interfaces
 - Function signatures in type expressions
