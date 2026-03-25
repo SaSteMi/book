@@ -1,0 +1,73 @@
+site_name: Verse API Reference
+site_url: https://verselang.github.io/book/api
+docs_dir: api_docs
+site_description: API for the Verse programming language
+site_author: Jan Vitek
+
+repo_name: verselang/book
+repo_url: https://github.com/verselang/book
+edit_uri: edit/main/api_docs/
+
+theme:
+  name: material
+  logo: images/verse.svg
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-7
+        name: Switch to Light mode
+
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: black
+      accent: deep orange
+      toggle:
+        icon: material/brightness-2
+        name: Switch to Dark mode
+
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: deep orange
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to System preference
+
+  features:
+#    - content.footnote.tooltips
+#    - navigation.tabs
+    - search.suggest
+
+markdown_extensions:
+ - admonition
+ - pymdownx.details
+ - footnotes
+#  - pymdownx.highlight:
+#       default_lang: verse
+#       linenums: false
+#       pygments_style: monokai
+#  - pymdownx.superfences
+
+plugins:
+  - search
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
+  - minify:
+      minify_html: true
+      minify_js: true
+      minify_css: true
+      htmlmin_opts:
+        remove_comments: true
+
+extra_css:
+  - extra.css
+
+extra_javascript:
+  - type: module
+    path: js/Verse.js
+
+
+nav:
+  - Home: index.md
+  - Overview: 00_overview.md
